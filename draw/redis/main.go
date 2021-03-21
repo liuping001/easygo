@@ -5,16 +5,16 @@ package main
 
 import (
 	"context"
-	"evoke/draw"
 	"flag"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"github.com/liuping001/easygo/draw"
 	"net/http"
 )
 
 var (
-	redisAddr=flag.String("redis_addr", "127.0.0.1:6379", "redis addr")
-	port=flag.String("port", "80", "http port")
+	redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis addr")
+	port      = flag.String("port", "80", "http port")
 )
 
 var (
@@ -59,7 +59,7 @@ func NewDrawByType(kType, key string) IDraw {
 	default:
 		return nil
 	case "stream":
-		return &stream{ key: key}
+		return &stream{key: key}
 	}
 }
 
@@ -75,24 +75,24 @@ func keyType(key string) string {
 }
 
 type Consumer struct {
-	name string
+	name    string
 	pending int64
-	idle int64
+	idle    int64
 }
 
 type Group struct {
-	name string
-	pending int64
+	name              string
+	pending           int64
 	last_delivered_id string
-	consumers []*Consumer
+	consumers         []*Consumer
 }
 
 type Stream struct {
-	length int64
-	redis_tree_keys int64
-	redis_tree_nodes int64
+	length            int64
+	redis_tree_keys   int64
+	redis_tree_nodes  int64
 	last_generated_id string
-	groups []*Group
+	groups            []*Group
 }
 
 type IDraw interface {
