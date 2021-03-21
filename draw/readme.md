@@ -22,3 +22,13 @@ go run example/main.go
 ```
 图片：
 ![](example/draw.png)
+
+# redis
+运行
+```shell script
+go run redis/main.go
+```
+按key画图
+```shell script
+localhost?key=my_stream
+```
