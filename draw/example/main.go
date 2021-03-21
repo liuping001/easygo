@@ -18,6 +18,7 @@ func main() {
 	http.HandleFunc("/slice", sliceSvg)
 	http.HandleFunc("/map", mapSvg)
 	http.HandleFunc("/struct", structSvg)
+	http.HandleFunc("/", index)
 
 	fmt.Println("Server started at port 80")
 	http.ListenAndServe(":80", nil)
@@ -68,4 +69,10 @@ func structSvg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Fprint(w, svg)
+}
+
+func index(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "<div>* <a href=\"/struct\">/struct</a></div>\n")
+	fmt.Fprintf(w, "<div>* <a href=\"/map\">/map</a></div>\n")
+	fmt.Fprintf(w, "<div>* <a href=\"/slice\">/slice</a></div>\n")
 }
