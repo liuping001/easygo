@@ -10,24 +10,41 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/liuping001/easygo/draw"
 	"net/http"
+	"strings"
 )
 
 var (
-	redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis addr")
-	port      = flag.String("port", "80", "http port")
+	redisAddr     = flag.String("redis_addr", "127.0.0.1:6379", "redis addr")
+	redisPassword = flag.String("redis_pass", "", "redis auth")
+	port          = flag.String("port", "80", "http port")
 )
 
 var (
-	redisClient *redis.Client
+	redisClient redis.Cmdable
+	isCluster   bool
 )
+
+func NewRedisClient(addr string, pass string) redis.Cmdable {
+	addrList := strings.Split(addr, ",")
+	if len(addrList) > 1 {
+		return redis.NewClusterClient(&redis.ClusterOptions{
+			Addrs:    addrList,
+			Password: pass,
+		})
+	} else {
+		return redis.NewClient(&redis.Options{
+			Addr:     addr,
+			Password: pass,
+		})
+	}
+}
 
 func main() {
 	flag.Parse()
 
 	// init redis
-	redisClient = redis.NewClient(&redis.Options{
-		Addr: *redisAddr,
-	})
+	redisClient = NewRedisClient(*redisAddr, *redisPassword)
+	isCluster = len(strings.Split(*redisAddr, ",")) > 1
 
 	http.HandleFunc("/", index)
 	fmt.Printf("Server started at port %s\n", *port)
@@ -93,6 +110,8 @@ type Stream struct {
 	redis_tree_nodes  int64
 	last_generated_id string
 	groups            []*Group
+	first             redis.XMessage
+	last              redis.XMessage
 }
 
 type IDraw interface {
@@ -116,6 +135,8 @@ func (s *stream) draw() (string, error) {
 	info.redis_tree_keys = streamInfo.RadixTreeKeys
 	info.redis_tree_nodes = streamInfo.RadixTreeNodes
 	info.last_generated_id = streamInfo.LastGeneratedID
+	info.first = streamInfo.FirstEntry
+	info.last = streamInfo.LastEntry
 
 	groupsRet := redisClient.XInfoGroups(ctx, s.key)
 	groupInfo, err := groupsRet.Result()
@@ -129,7 +150,15 @@ func (s *stream) draw() (string, error) {
 			pending:           item.Pending,
 			last_delivered_id: item.LastDeliveredID,
 		}
-		consumReq := redisClient.XInfoConsumers(ctx, s.key, item.Name)
+
+		// Cmdable 暂时不支持 XInfoConsumers接口函数
+		var consumReq *redis.XInfoConsumersCmd
+		if isCluster {
+			consumReq = redisClient.(*redis.ClusterClient).XInfoConsumers(ctx, s.key, item.Name)
+		} else {
+			consumReq = redisClient.(*redis.Client).XInfoConsumers(ctx, s.key, item.Name)
+		}
+
 		consumerInfo, err := consumReq.Result()
 		if err != nil {
 			return "", nil
