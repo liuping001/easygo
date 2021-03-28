@@ -16,7 +16,7 @@ import (
 var (
 	redisAddr     = flag.String("redis_addr", "127.0.0.1:6379", "redis addr")
 	redisPassword = flag.String("redis_pass", "", "redis auth")
-	port          = flag.String("port", "80", "http port")
+	port          = flag.String("port", "8888", "http port")
 )
 
 var (

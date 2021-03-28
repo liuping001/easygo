@@ -20,8 +20,8 @@ func main() {
 	http.HandleFunc("/struct", structSvg)
 	http.HandleFunc("/", index)
 
-	fmt.Println("Server started at port 80")
-	http.ListenAndServe(":80", nil)
+	fmt.Println("Server started at port 8888")
+	http.ListenAndServe(":8888", nil)
 }
 
 func sliceSvg(w http.ResponseWriter, r *http.Request) {
