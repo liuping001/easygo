@@ -27,4 +27,8 @@ func main() {
 `
 	t := JsonOutStruct{StructOutI(&CppStructOut{})}
 	t.Object([]byte("root"), []byte(data))
+	{
+		t := JsonOutParseFunc{FuncOutI(&CppParseFuncOut{})}
+		t.Object([]byte("root"), []byte(data))
+	}
 }
