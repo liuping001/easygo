@@ -25,10 +25,10 @@ func main() {
 	"listB": ["a"]
 }
 `
-	t := JsonOutStruct{StructOutI(&CppStructOut{})}
+	t := JsonOutStruct{StructOutI(&CppStructOut{}), TypeTransformI(&CppTypeTransform{})}
 	t.Object([]byte("root"), []byte(data))
 	{
-		t := JsonOutParseFunc{FuncOutI(&CppParseFuncOut{})}
+		t := JsonOutParseFunc{FuncOutI(&CppParseFuncOut{}), TypeTransformI(&CppTypeTransform{})}
 		t.Object([]byte("root"), []byte(data))
 	}
 }

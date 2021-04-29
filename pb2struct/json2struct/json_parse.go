@@ -9,6 +9,35 @@ import (
 	"strings"
 )
 
+// value:传入数组的值，返回数组中元素的类型
+func ArrayItemType(value []byte) jsonparser.ValueType {
+	var ret jsonparser.ValueType
+	retType := &ret
+	count := 0
+	jsonparser.ArrayEach(value, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		count++
+		if count > 1 {
+			return
+		}
+		*retType = dataType
+	})
+	return ret
+}
+
+type TypeTransformI interface {
+	StructDataType(t jsonparser.ValueType) string
+}
+
+// 返回数组本身的类型名
+func ArrayType(key []byte, value []byte, tt TypeTransformI) string {
+	dataType := ArrayItemType(value)
+	if dataType == jsonparser.Object || dataType == jsonparser.Array {
+		return strings.Title(string(key))
+	} else {
+		return tt.StructDataType(dataType)
+	}
+}
+
 type StructOutI interface {
 	ClassBegin(name string) string
 	ClassEnd() string
@@ -20,6 +49,7 @@ type StructOutI interface {
 // 从json解析出结构体
 type JsonOutStruct struct {
 	StructOutI
+	TypeTransformI
 }
 
 func (t *JsonOutStruct) Object(key []byte, value []byte) {
@@ -31,9 +61,9 @@ func (t *JsonOutStruct) Object(key []byte, value []byte) {
 			obj = append(obj, fmt.Sprintf("%s", t.Field(strings.Title(string(key)), string(key))))
 		} else if dataType == jsonparser.Array {
 			t.Array(key, value)
-			obj = append(obj, fmt.Sprintf("%s", t.ArrayField(t.ArrayType(key, value), string(key))))
+			obj = append(obj, fmt.Sprintf("%s", t.ArrayField(ArrayType(key, value, t), string(key))))
 		} else {
-			obj = append(obj, fmt.Sprintf("%s", t.Field(dataType.String(), string(key))))
+			obj = append(obj, fmt.Sprintf("%s", t.Field(t.StructDataType(dataType), string(key))))
 		}
 		return nil
 	})
@@ -60,36 +90,19 @@ func (t *JsonOutStruct) Array(key []byte, value []byte) {
 	})
 }
 
-func (t *JsonOutStruct) ArrayType(key []byte, value []byte) string {
-	var ret string
-	retType := &ret
-	count := 0
-	jsonparser.ArrayEach(value, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-		count++
-		if count > 1 {
-			return
-		}
-		if dataType == jsonparser.Object || dataType == jsonparser.Array {
-			*retType = strings.Title(string(key))
-		} else {
-			*retType = dataType.String()
-		}
-	})
-	return ret
-}
-
 type FuncOutI interface {
 	FuncTab() string
 	ToJsonBegin(name string) string
 	ToJsonEnd() string
-	ArrayField(Type, name string, itemIsObject bool) string
+	ArrayField(t jsonparser.ValueType, name string) string
 	ObjectField(Type, name string) string
-	Field(Type, name string) string
+	Field(t jsonparser.ValueType, name string) string
 }
 
 // 从json解析出结构体
 type JsonOutParseFunc struct {
 	FuncOutI
+	TypeTransformI
 }
 
 func (t *JsonOutParseFunc) Object(key []byte, value []byte) {
@@ -101,11 +114,11 @@ func (t *JsonOutParseFunc) Object(key []byte, value []byte) {
 			obj = append(obj, fmt.Sprintf("%s", t.ObjectField(strings.Title(string(key)), string(key))))
 		} else if dataType == jsonparser.Array {
 			t.Array(key, value)
-			itemType := t.ArrayItemType(value)
+			itemType := ArrayItemType(value)
 			obj = append(obj, fmt.Sprintf("%s",
-				t.ArrayField(t.ArrayType(key, value), string(key), itemType == jsonparser.Object)))
+				t.ArrayField(itemType, string(key))))
 		} else {
-			obj = append(obj, fmt.Sprintf("%s", t.Field(dataType.String(), string(key))))
+			obj = append(obj, fmt.Sprintf("%s", t.Field(dataType, string(key))))
 		}
 		return nil
 	})
@@ -130,36 +143,4 @@ func (t *JsonOutParseFunc) Array(key []byte, value []byte) {
 
 		}
 	})
-}
-
-func (t *JsonOutParseFunc) ArrayItemType(value []byte) jsonparser.ValueType {
-	var ret jsonparser.ValueType
-	retType := &ret
-	count := 0
-	jsonparser.ArrayEach(value, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-		count++
-		if count > 1 {
-			return
-		}
-		*retType = dataType
-	})
-	return ret
-}
-
-func (t *JsonOutParseFunc) ArrayType(key []byte, value []byte) string {
-	var ret string
-	retType := &ret
-	count := 0
-	jsonparser.ArrayEach(value, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-		count++
-		if count > 1 {
-			return
-		}
-		if dataType == jsonparser.Object || dataType == jsonparser.Array {
-			*retType = strings.Title(string(key))
-		} else {
-			*retType = dataType.String()
-		}
-	})
-	return ret
 }
