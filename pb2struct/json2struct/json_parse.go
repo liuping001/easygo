@@ -25,6 +25,7 @@ func ArrayItemType(value []byte) jsonparser.ValueType {
 }
 
 type TypeTransformI interface {
+	// 在这个接口中处理 Object、Array意以外的类型
 	StructDataType(t jsonparser.ValueType) string
 }
 
@@ -50,6 +51,7 @@ type StructOutI interface {
 type JsonOutStruct struct {
 	StructOutI
 	TypeTransformI
+	OutString []string
 }
 
 func (t *JsonOutStruct) Object(key []byte, value []byte) {
@@ -69,7 +71,7 @@ func (t *JsonOutStruct) Object(key []byte, value []byte) {
 	})
 	obj = append(obj, t.ClassEnd())
 	for _, item := range obj {
-		fmt.Printf(item)
+		t.OutString = append(t.OutString, item)
 	}
 }
 
@@ -90,19 +92,19 @@ func (t *JsonOutStruct) Array(key []byte, value []byte) {
 	})
 }
 
-type FuncOutI interface {
-	FuncTab() string
+type OutJsonFuncI interface {
 	ToJsonBegin(name string) string
 	ToJsonEnd() string
-	ArrayField(t jsonparser.ValueType, name string) string
-	ObjectField(Type, name string) string
-	Field(t jsonparser.ValueType, name string) string
+	ToJsonArrayField(t jsonparser.ValueType, name string) string
+	ToJsonObjectField(Type, name string) string
+	ToJsonField(t jsonparser.ValueType, name string) string
 }
 
 // 从json解析出结构体
 type JsonOutParseFunc struct {
-	FuncOutI
+	OutJsonFuncI
 	TypeTransformI
+	OutString []string
 }
 
 func (t *JsonOutParseFunc) Object(key []byte, value []byte) {
@@ -111,20 +113,20 @@ func (t *JsonOutParseFunc) Object(key []byte, value []byte) {
 	jsonparser.ObjectEach(value, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		if dataType == jsonparser.Object {
 			t.Object(key, value)
-			obj = append(obj, fmt.Sprintf("%s", t.ObjectField(strings.Title(string(key)), string(key))))
+			obj = append(obj, fmt.Sprintf("%s", t.ToJsonObjectField(strings.Title(string(key)), string(key))))
 		} else if dataType == jsonparser.Array {
 			t.Array(key, value)
 			itemType := ArrayItemType(value)
 			obj = append(obj, fmt.Sprintf("%s",
-				t.ArrayField(itemType, string(key))))
+				t.ToJsonArrayField(itemType, string(key))))
 		} else {
-			obj = append(obj, fmt.Sprintf("%s", t.Field(dataType, string(key))))
+			obj = append(obj, fmt.Sprintf("%s", t.ToJsonField(dataType, string(key))))
 		}
 		return nil
 	})
 	obj = append(obj, t.ToJsonEnd())
 	for _, item := range obj {
-		fmt.Printf(item)
+		t.OutString = append(t.OutString, item)
 	}
 }
 

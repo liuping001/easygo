@@ -44,27 +44,24 @@ func (c *CppStructOut) Field(Type, name string) string {
 	return fmt.Sprintf("%s%s %s;\n", c.ClassTab(), Type, name)
 }
 
-type CppParseFuncOut struct {
+type RapidJsonParseFuncOut struct {
 }
 
-func (p *CppParseFuncOut) FuncTab() string {
-	return "    "
-}
-func (p *CppParseFuncOut) ToJsonBegin(name string) string {
+func (p *RapidJsonParseFuncOut) ToJsonBegin(name string) string {
 	ret := `
 void ToJson(rapidjson::Writer<rapidjson::StringBuffer> &writer, const %s &from_data_) {
     writer.StartObject();`
 	return fmt.Sprintf(ret, name)
 }
 
-func (p *CppParseFuncOut) ToJsonEnd() string {
+func (p *RapidJsonParseFuncOut) ToJsonEnd() string {
 	ret := `
     writer.EndObject();
 }`
 	return ret
 }
 
-func (p *CppParseFuncOut) WriteFuncName(t jsonparser.ValueType) string {
+func (p *RapidJsonParseFuncOut) WriteFuncName(t jsonparser.ValueType) string {
 	if t == jsonparser.String {
 		return "String"
 	} else if t == jsonparser.Number {
@@ -76,7 +73,7 @@ func (p *CppParseFuncOut) WriteFuncName(t jsonparser.ValueType) string {
 	}
 }
 
-func (p *CppParseFuncOut) ArrayField(t jsonparser.ValueType, name string) string {
+func (p *RapidJsonParseFuncOut) ToJsonArrayField(t jsonparser.ValueType, name string) string {
 	ret := `
     writer.Key("%s");
     writer.StartArray();
@@ -98,14 +95,14 @@ func (p *CppParseFuncOut) ArrayField(t jsonparser.ValueType, name string) string
 	}
 }
 
-func (p *CppParseFuncOut) ObjectField(Type, name string) string {
+func (p *RapidJsonParseFuncOut) ToJsonObjectField(Type, name string) string {
 	ret := `
     writer.Key("%s");
     ToJson(from_data_.%s);`
 	return fmt.Sprintf(ret, name,
 		name)
 }
-func (p *CppParseFuncOut) Field(t jsonparser.ValueType, name string) string {
+func (p *RapidJsonParseFuncOut) ToJsonField(t jsonparser.ValueType, name string) string {
 	ret := `
     writer.Key("%s");
     writer.%s(from_data_.%s);`

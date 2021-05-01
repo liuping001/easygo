@@ -3,32 +3,53 @@
 
 package main
 
-func main() {
-	data := `
-{
-    "code": 0,
-    "msg": "",
-    "op_time": "1619242782",
-    "data": {
-        "base_match_m": "300",
-        "oxy_match_m": "620",
-        "donate_t": "30",
-        "donate_m": "3000"
-    },
-	"listA": [
-		{
-        "a": "300",
-        "b": ["b"],
-        "c": 30
-		}
-	],
-	"listB": ["a"]
+import (
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"os"
+)
+
+var (
+	file       = flag.String("file", "", "json")
+	structType = flag.String("to_type", "rapidjson", "watch cpp json lib. rapidjson")
+)
+
+func ReadAll(filePath string) ([]byte, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	return ioutil.ReadAll(file)
 }
-`
-	t := JsonOutStruct{StructOutI(&CppStructOut{}), TypeTransformI(&CppTypeTransform{})}
-	t.Object([]byte("root"), []byte(data))
+
+func toRipadJson(data []byte) {
 	{
-		t := JsonOutParseFunc{FuncOutI(&CppParseFuncOut{}), TypeTransformI(&CppTypeTransform{})}
+		t := JsonOutStruct{StructOutI(&CppStructOut{}),
+			TypeTransformI(&CppTypeTransform{}),
+			[]string{}}
 		t.Object([]byte("root"), []byte(data))
 	}
+	{
+		t := JsonOutParseFunc{OutJsonFuncI(&RapidJsonParseFuncOut{}),
+			TypeTransformI(&CppTypeTransform{}),
+			[]string{}}
+		t.Object([]byte("root"), []byte(data))
+	}
+}
+
+func main() {
+	flag.Parse()
+
+	json, err := ReadAll(*file)
+	if err != nil {
+		fmt.Print("err:%s", err.Error())
+		os.Exit(1)
+		return
+	}
+	if *structType == "rapidjson" {
+		toRipadJson(json)
+	}
+
 }
