@@ -52,10 +52,14 @@ func (p *RapidJsonParseFuncOut) FuncArrayField(t string, name string) string {
 			name,
 			"ToJson(item)")
 	} else {
+		suffix := ""
+		if t == util.CppString {
+			suffix = ".c_str()"
+		}
 		return fmt.Sprintf(ret,
 			name,
 			name,
-			fmt.Sprintf("writer.%s(item)", p.writeFuncName(t)))
+			fmt.Sprintf("writer.%s(item%s)", p.writeFuncName(t), suffix))
 	}
 }
 
@@ -67,10 +71,14 @@ func (p *RapidJsonParseFuncOut) FuncObjectField(Type, name string) string {
 		name)
 }
 func (p *RapidJsonParseFuncOut) FuncField(t, name string) string {
+	suffix := ""
+	if t == util.CppString {
+		suffix = ".c_str()"
+	}
 	ret := `
     writer.Key("%s");
-    writer.%s(from_data_.%s);`
-	return fmt.Sprintf(ret, name, p.writeFuncName(t), name)
+    writer.%s(from_data_.%s%s);`
+	return fmt.Sprintf(ret, name, p.writeFuncName(t), name, suffix)
 }
 
 func (p *RapidJsonParseFuncOut) Include() string {
@@ -91,7 +99,7 @@ inline std::string ToJson(const Root &data)
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 	ToJson(writer, data)
-    _return.Body = buffer.GetString();
+    return buffer.GetString();
 }
 `
 }

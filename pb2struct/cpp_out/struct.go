@@ -16,7 +16,7 @@ func (c *CppStructOut) ClassBegin(Type string) string {
 	return fmt.Sprintf("struct %s { \n", Type)
 }
 func (c *CppStructOut) ClassEnd() string {
-	return fmt.Sprintf("}\n")
+	return fmt.Sprintf("};\n")
 }
 
 func (c *CppStructOut) ClassTab() string {
