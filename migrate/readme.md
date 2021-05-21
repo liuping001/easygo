@@ -8,7 +8,7 @@ from_mysql | awk | to_redis
 ```
 数据流向图  
 ```mermaid
-flowchart LR;
+graph LR;
     from_mysql-->awk;
     from_redis-->awk;
     from_other_db-->awk;
@@ -18,7 +18,7 @@ flowchart LR;
 ```
 ### 有些情况也可以省略awk
 ```mermaid
-flowchart LR;
-    from_kafka-->to_redis_queue;
-    from_redis_queue-->to_kafka
+graph LR;
+from_kafka-->to_redis_queue;
+from_redis_queue-->to_kafka;
 ```
