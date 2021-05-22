@@ -23,3 +23,28 @@ graph LR;
 from_kafka-->to_redis_queue;
 from_redis_queue-->to_kafka;
 ```
+
+
+# to_redis
+### 参数描述
+```shell script
+./to_redis --help
+Usage of ./to_redis/to_redis:
+  -msgQueueLen int
+        生产者队列长度 (default 5000)
+  -redisAddr string
+        redis 地址 (default "127.0.0.1:6379")
+  -redisPass string
+        redis 密码
+  -workerNum int
+        工作协程数 (default 1)
+```
+### 使用
+```shell script
+echo "set key1 value1 \n set key2 value2"| ./to_redis
+```
+### todo
+```shell script
+# 暂不支持如下带引号的string
+echo 'set key1 "value 1"' | ./to_redis
+```

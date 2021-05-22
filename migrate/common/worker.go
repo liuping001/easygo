@@ -6,7 +6,6 @@ package common
 import (
 	"context"
 	"flag"
-	"fmt"
 	"sync"
 )
 
@@ -49,5 +48,5 @@ func (w *Worker) Run() {
 
 func (w *Worker) OnExit() {
 	w.cancel()
-	fmt.Println("work will exit")
+	MyLog.Infof("work will exit\n")
 }

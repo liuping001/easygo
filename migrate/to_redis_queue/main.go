@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"github.com/liuping001/easygo/migrate/common"
 	. "github.com/liuping001/fastgo/app"
-	. "github.com/liuping001/fastgo/util/redis"
+	myredis "github.com/liuping001/fastgo/util/redis"
 	"sync/atomic"
 	"time"
 )
@@ -28,9 +28,9 @@ func (t *toRedisQueue) ConsumerMsg(msg interface{}) {
 	index := atomic.AddUint64(&t.i, 1) % *queueNum
 	key := fmt.Sprintf("%s:%d", *queueKey, index)
 
-	ret := Client.LPush(key, value)
+	ret := myredis.Client.LPush(key, value)
 	if ret.Err() != nil {
-		fmt.Errorf("lpush error:%s\n", ret.Err())
+		common.MyLog.Errorf("lpush error:%s\n", ret.Err())
 		time.Sleep(1 * time.Second)
 	}
 }
@@ -46,12 +46,12 @@ func (s *MySignal) OnExit() {
 
 func main() {
 	flag.Parse()
-	Init()
+	myredis.Init()
 
 	work := common.Worker{
 		Consumer: &toRedisQueue{},
 	}
 
-	GracefulExit(&MySignal{&DefaultOnSignal{}, &work}, nil)
+	GracefulExit(&MySignal{&DefaultOnSignal{}, &work}, common.MyLog)
 	work.Run()
 }
