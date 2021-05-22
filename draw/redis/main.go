@@ -44,9 +44,11 @@ func main() {
 
 	// init redis
 	redisClient = NewRedisClient(*redisAddr, *redisPassword)
+
 	isCluster = len(strings.Split(*redisAddr, ",")) > 1
 
 	http.HandleFunc("/", index)
+	http.HandleFunc("/show", show)
 	fmt.Printf("Server started at port %s\n", *port)
 	http.ListenAndServe(fmt.Sprintf(":%s", *port), nil)
 }
