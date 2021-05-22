@@ -27,12 +27,12 @@ from_redis_queue-->to_kafka;
 * 1、from_mysql
 ```shell 
 ./from_mysql \
-  -dbhost=127.0.0.1 \
-  -dbport=3306 \
-  -dbuser=root \
-  -dbname=test \
-  -dbpassword=root \
-  -sqltemplate="select f_id, f_ddate, f_pid, f_money, f_times from t_project_day limit 5" \
+  -dbHost=127.0.0.1 \
+  -dbPort=3306 \
+  -dbUser=root \
+  -dbName=test \
+  -dbPassword=root \
+  -sqlTemplate="select f_id, f_ddate, f_pid, f_money, f_times from t_project_day limit 5" \
   -seq="|"
 # 输出
 #1023|2020-08-15|12|14280334|5862
@@ -59,32 +59,32 @@ cat from_mysql.out | awk -F"|" '{print "hmset gd:pb:{"$3"}:"$2" m "$4" t "$5}'
 
 cat awk.out |  ./to_redis -redisAddr=127.0.0.1:6379
 
-# [root@VM_236_135_centos]# redis-cli hgetall gd:pb:{12}:2020-08-15
+# [root@centos]# redis-cli hgetall gd:pb:{12}:2020-08-15
 # 1) "m"
 # 2) "14280334"
 # 3) "t"
 # 4) "5862"
-# [root@VM_236_135_centos]# redis-cli hgetall gd:pb:{12}:2020-08-15
+# [root@centos]# redis-cli hgetall gd:pb:{12}:2020-08-15
 # 1) "m"
 # 2) "14280334"
 # 3) "t"
 # 4) "5862"
-# [root@VM_236_135_centos]# redis-cli hgetall gd:pb:{27}:2020-08-15
+# [root@centos]# redis-cli hgetall gd:pb:{27}:2020-08-15
 # 1) "m"
 # 2) "1793071"
 # 3) "t"
 # 4) "1264"
-# [root@VM_236_135_centos]# redis-cli hgetall gd:pb:{46}:2020-08-15
+# [root@centos]# redis-cli hgetall gd:pb:{46}:2020-08-15
 # 1) "m"
 # 2) "153606"
 # 3) "t"
 # 4) "187"
-# [root@VM_236_135_centos]# redis-cli hgetall gd:pb:{48}:2020-08-15
+# [root@centos]# redis-cli hgetall gd:pb:{48}:2020-08-15
 # 1) "m"
 # 2) "807675"
 # 3) "t"
 # 4) "774"
-# [root@VM_236_135_centos]# redis-cli hgetall gd:pb:{52}:2020-08-15
+# [root@centos]# redis-cli hgetall gd:pb:{52}:2020-08-15
 # 1) "m"
 # 2) "156965"
 # 3) "t"
@@ -93,9 +93,9 @@ cat awk.out |  ./to_redis -redisAddr=127.0.0.1:6379
 
 ### 综上
 ```shell script
-./from_mysql   --dbhost=127.0.0.1   --dbport=3306  --dbuser=root  --dbname=test --dbpassword=root \
-  --sqltemplate="select f_id, f_ddate, f_pid, f_money, f_times from t_project_donation_day_special limit 5" \
-  --seq="|" |  awk -F"|" '{print "hmset gd:pb:{"$3"}:"$2" m "$4" t "$5}' |  ./to_redis -redisAddr=127.0.0.1:6379
+./from_mysql   -dbHost=127.0.0.1   -dbPort=3306  -dbUser=root  -dbName=test -dbPassword=root \
+  -sqlTemplate="select f_id, f_ddate, f_pid, f_money, f_times from t_project_donation_day_special limit 5" \
+  -seq="|" |  awk -F"|" '{print "hmset gd:pb:{"$3"}:"$2" m "$4" t "$5}' |  ./to_redis -redisAddr=127.0.0.1:6379
 ``` 
 
 
