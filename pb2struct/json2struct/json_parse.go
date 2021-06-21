@@ -43,28 +43,36 @@ type JsonOutStruct struct {
 	OutString []string
 }
 
-func (t *JsonOutStruct) Object(key []byte, value []byte) {
+func (t *JsonOutStruct) Object(key []byte, value []byte) error {
 	obj := []string{}
 	obj = append(obj, t.ClassBegin(strings.Title(string(key))))
-	jsonparser.ObjectEach(value, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+	err := jsonparser.ObjectEach(value, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		if dataType == jsonparser.Object {
 			t.Object(key, value)
 			obj = append(obj, fmt.Sprintf("%s", t.Field(strings.Title(string(key)), string(key))))
 		} else if dataType == jsonparser.Array {
-			t.Array(key, value)
+			err := t.Array(key, value)
+			if err != nil {
+				return err
+			}
 			obj = append(obj, fmt.Sprintf("%s", t.ArrayField(ArrayType(key, value, t), string(key))))
 		} else {
 			obj = append(obj, fmt.Sprintf("%s", t.Field(t.StructDataType(dataType), string(key))))
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 	obj = append(obj, t.ClassEnd())
 	for _, item := range obj {
 		t.OutString = append(t.OutString, item)
 	}
+	return nil
 }
 
-func (t *JsonOutStruct) Array(key []byte, value []byte) {
+func (t *JsonOutStruct) Array(key []byte, value []byte) error {
+	var err error
 	count := 0
 	jsonparser.ArrayEach(value, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
 		count++
@@ -74,11 +82,12 @@ func (t *JsonOutStruct) Array(key []byte, value []byte) {
 		if dataType == jsonparser.Object {
 			t.Object(key, value)
 		} else if dataType == jsonparser.Array {
-
+			err = fmt.Errorf("不支持二维数组: key:%s", key)
 		} else {
 
 		}
 	})
+	return err
 }
 
 // 生成将结构序列化和反序列化的函数
@@ -88,10 +97,10 @@ type JsonOutParseFunc struct {
 	OutString []string
 }
 
-func (t *JsonOutParseFunc) Object(key []byte, value []byte) {
+func (t *JsonOutParseFunc) Object(key []byte, value []byte) error {
 	obj := []string{}
 	obj = append(obj, t.FuncBegin(strings.Title(string(key))))
-	jsonparser.ObjectEach(value, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+	err := jsonparser.ObjectEach(value, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		if dataType == jsonparser.Object {
 			t.Object(key, value)
 			obj = append(obj, fmt.Sprintf("%s", t.FuncObjectField(strings.Title(string(key)), string(key))))
@@ -105,10 +114,14 @@ func (t *JsonOutParseFunc) Object(key []byte, value []byte) {
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 	obj = append(obj, t.FuncEnd())
 	for _, item := range obj {
 		t.OutString = append(t.OutString, item)
 	}
+	return nil
 }
 
 func (t *JsonOutParseFunc) Array(key []byte, value []byte) {

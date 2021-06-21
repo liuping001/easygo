@@ -37,8 +37,9 @@ func NewFile(file string, dir string, suffix string) (*os.File, error) {
 }
 
 type OutInfo struct {
-	Path   string
-	OutDir string
+	Path    string
+	OutDir  string
+	OutFunc int
 }
 
 var (

@@ -16,25 +16,45 @@ type cppOutFuncI interface {
 	RootFunc() string
 }
 
-func JsonToCpp(data []byte, out util.OutInfo, outFunc cppOutFuncI) {
+func JsonToCpp(data []byte, out util.OutInfo, toJson, fromJson cppOutFuncI) error {
 	toStruct := json2struct.JsonOutStruct{
 		OutStructI:     &CppStructOut{},
 		TypeTransformI: &json2struct.CppTypeTransform{},
 		OutString:      []string{},
 	}
-	toStruct.Object([]byte("root"), data)
+	err := toStruct.Object([]byte("root"), data)
+	if err != nil {
+		return err
+	}
 
-	toFunc := json2struct.JsonOutParseFunc{
-		OutFuncI:       outFunc,
+	ToJsonSting := json2struct.JsonOutParseFunc{
+		OutFuncI:       toJson,
 		TypeTransformI: &json2struct.CppTypeTransform{},
 		OutString:      []string{},
 	}
-	toFunc.Object([]byte("root"), data)
+	if toJson != nil {
+		err = ToJsonSting.Object([]byte("root"), data)
+		if err != nil {
+			return err
+		}
+	}
+
+	FromJsonString := json2struct.JsonOutParseFunc{
+		OutFuncI:       fromJson,
+		TypeTransformI: &json2struct.CppTypeTransform{},
+		OutString:      []string{},
+	}
+	if fromJson != nil {
+		err = FromJsonString.Object([]byte("root"), data)
+		if err != nil {
+			return err
+		}
+	}
 
 	h, err := util.NewFile(out.Path, out.OutDir, ".h")
 	if err != nil {
 		fmt.Println(err.Error())
-		return
+		return nil
 	}
 	defer h.Close()
 	header :=
@@ -42,18 +62,41 @@ func JsonToCpp(data []byte, out util.OutInfo, outFunc cppOutFuncI) {
 #pragma once
 `
 	h.WriteString(header)
-	h.WriteString(outFunc.Include())
+
+	if toJson != nil {
+		h.WriteString(toJson.Include())
+	} else {
+		h.WriteString(fromJson.Include())
+	}
+
 	h.WriteString(fmt.Sprintf("namespace %s {\n", util.FileName(out.Path)))
 	for _, item := range toStruct.OutString {
 		h.WriteString(item)
 	}
-	for _, item := range toFunc.OutString {
-		h.WriteString(item)
+	if toJson != nil {
+		for _, item := range ToJsonSting.OutString {
+			h.WriteString(item)
+		}
+		h.WriteString(toJson.RootFunc())
 	}
-	h.WriteString(outFunc.RootFunc())
+
+	if fromJson != nil {
+		for _, item := range FromJsonString.OutString {
+			h.WriteString(item)
+		}
+		h.WriteString(fromJson.RootFunc())
+	}
+
 	h.WriteString(fmt.Sprintf("\n}\n"))
+	return nil
 }
 
-func JsonToRapidJson(data []byte, out util.OutInfo) {
-	JsonToCpp(data, out, &RapidJsonParseFuncOut{})
+func JsonToRapidJson(data []byte, out util.OutInfo) error {
+	if out.OutFunc == 1 {
+		return JsonToCpp(data, out, nil, &RapidJsonParseFuncIn{})
+	} else if out.OutFunc == 2 {
+		return JsonToCpp(data, out, &RapidJsonParseFuncOut{}, nil)
+	} else {
+		return JsonToCpp(data, out, &RapidJsonParseFuncOut{}, &RapidJsonParseFuncIn{})
+	}
 }

@@ -103,3 +103,88 @@ inline std::string ToJson(const Root &data)
 }
 `
 }
+
+type RapidJsonParseFuncIn struct {
+}
+
+func (p *RapidJsonParseFuncIn) FuncBegin(Type string) string {
+	ret := `
+void FromJson(const rapidjson::Document &doc, %s &to_data_) {
+    `
+	return fmt.Sprintf(ret, Type)
+}
+
+func (p *RapidJsonParseFuncIn) FuncEnd() string {
+	ret := `
+}`
+	return ret
+}
+
+func (p *RapidJsonParseFuncIn) readFuncName(t string) string {
+	if t == util.CppString {
+		return "GetString"
+	} else if t == util.CppInt64 {
+		return "GetInt64"
+	} else if t == util.CppBool {
+		return "GetBool"
+	} else {
+		return "error_field"
+	}
+}
+
+func (p *RapidJsonParseFuncIn) FuncArrayField(t string, name string) string {
+	ret := `
+	if (doc.HasMember("%s")) {
+		auto items = doc["%s"].GetArray();
+		for (auto iter = items.Begin(); iter != items.End(); iter ++)
+		{
+			to_data_.%s.emplace_back();
+			auto &item =to_data_.%s.back();
+			%s
+		}
+	}`
+	if t == util.CppObject {
+		return fmt.Sprintf(ret,
+			name,
+			name,
+			name,
+			name,
+			"FromJson(iter->GetObject(), item)")
+	} else {
+		return fmt.Sprintf("item = iter->%s();", name, p.readFuncName(t))
+	}
+}
+
+func (p *RapidJsonParseFuncIn) FuncObjectField(Type, name string) string {
+	ret := `
+    if (doc.HasMember("%s")) FromJson(doc["%s"].GetObject(), to_data_.%s);`
+	return fmt.Sprintf(ret, name, name, name)
+}
+func (p *RapidJsonParseFuncIn) FuncField(t, name string) string {
+	ret := `
+    if (doc.HasMember("%s")) to_data_.%s = doc["%s"].%s();`
+	return fmt.Sprintf(ret, name, name, name, p.readFuncName(t))
+}
+
+func (p *RapidJsonParseFuncIn) Include() string {
+	return `
+#include <string>
+#include <vector>
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+
+`
+}
+
+func (p *RapidJsonParseFuncIn) RootFunc() string {
+	return `
+template<class T>
+T FromJson(const rapidjson::Document &doc) 
+{
+    T data;
+	FromJson(doc, data)
+    return data;
+}
+`
+}
