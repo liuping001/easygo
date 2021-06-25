@@ -8,7 +8,6 @@ import (
 	"github.com/buger/jsonparser"
 	"github.com/liuping001/easygo/pb2struct/common"
 	"github.com/liuping001/easygo/pb2struct/util"
-	"strings"
 )
 
 // value:传入数组的值，返回数组中元素的类型
@@ -30,7 +29,7 @@ func arrayItemType(value []byte) jsonparser.ValueType {
 func ArrayType(key []byte, value []byte, tt common.TypeTransformI) string {
 	dataType := arrayItemType(value)
 	if dataType == jsonparser.Object || dataType == jsonparser.Array {
-		return strings.Title(string(key))
+		return util.CamelName(string(key))
 	} else {
 		return tt.StructDataType(dataType)
 	}
@@ -45,11 +44,11 @@ type JsonOutStruct struct {
 
 func (t *JsonOutStruct) Object(key []byte, value []byte) error {
 	obj := []string{}
-	obj = append(obj, t.ClassBegin(strings.Title(string(key))))
+	obj = append(obj, t.ClassBegin(util.CamelName(string(key))))
 	err := jsonparser.ObjectEach(value, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		if dataType == jsonparser.Object {
 			t.Object(key, value)
-			obj = append(obj, fmt.Sprintf("%s", t.Field(strings.Title(string(key)), string(key))))
+			obj = append(obj, fmt.Sprintf("%s", t.Field(util.CamelName(string(key)), string(key))))
 		} else if dataType == jsonparser.Array {
 			err := t.Array(key, value)
 			if err != nil {
@@ -99,11 +98,11 @@ type JsonOutParseFunc struct {
 
 func (t *JsonOutParseFunc) Object(key []byte, value []byte) error {
 	obj := []string{}
-	obj = append(obj, t.FuncBegin(strings.Title(string(key))))
+	obj = append(obj, t.FuncBegin(util.CamelName(string(key))))
 	err := jsonparser.ObjectEach(value, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		if dataType == jsonparser.Object {
 			t.Object(key, value)
-			obj = append(obj, fmt.Sprintf("%s", t.FuncObjectField(strings.Title(string(key)), string(key))))
+			obj = append(obj, fmt.Sprintf("%s", t.FuncObjectField(util.CamelName(string(key)), string(key))))
 		} else if dataType == jsonparser.Array {
 			t.Array(key, value)
 			itemType := arrayItemType(value)

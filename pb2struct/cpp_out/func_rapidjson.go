@@ -66,7 +66,7 @@ func (p *RapidJsonParseFuncOut) FuncArrayField(t string, name string) string {
 func (p *RapidJsonParseFuncOut) FuncObjectField(Type, name string) string {
 	ret := `
     writer.Key("%s");
-    ToJson(from_data_.%s);`
+    ToJson(writer, from_data_.%s);`
 	return fmt.Sprintf(ret, name,
 		name)
 }
@@ -98,7 +98,7 @@ inline std::string ToJson(const Root &data)
 {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-	ToJson(writer, data)
+	ToJson(writer, data);
     return buffer.GetString();
 }
 `
@@ -109,7 +109,7 @@ type RapidJsonParseFuncIn struct {
 
 func (p *RapidJsonParseFuncIn) FuncBegin(Type string) string {
 	ret := `
-void FromJson(const rapidjson::Document &doc, %s &to_data_) {
+void FromJson(const rapidjson::Value &doc, %s &to_data_) {
     `
 	return fmt.Sprintf(ret, Type)
 }
@@ -149,7 +149,7 @@ func (p *RapidJsonParseFuncIn) FuncArrayField(t string, name string) string {
 			name,
 			name,
 			name,
-			"FromJson(iter->GetObject(), item)")
+			"FromJson(*iter, item)")
 	} else {
 		return fmt.Sprintf(ret,
 			name,
@@ -162,7 +162,7 @@ func (p *RapidJsonParseFuncIn) FuncArrayField(t string, name string) string {
 
 func (p *RapidJsonParseFuncIn) FuncObjectField(Type, name string) string {
 	ret := `
-    if (doc.HasMember("%s")) FromJson(doc["%s"].GetObject(), to_data_.%s);`
+    if (doc.HasMember("%s")) FromJson(doc["%s"], to_data_.%s);`
 	return fmt.Sprintf(ret, name, name, name)
 }
 func (p *RapidJsonParseFuncIn) FuncField(t, name string) string {
@@ -188,7 +188,7 @@ template<class T>
 T FromJson(const rapidjson::Document &doc) 
 {
     T data;
-	FromJson(doc, data)
+	FromJson(doc, data);
     return data;
 }
 `
