@@ -1,0 +1,105 @@
+{
+  "loglevel": "INFO",
+  "logfile_size": 2048000000,
+  "logfile_backup_num": 80,
+
+  "msg_redis": {
+    "qnum": 11,
+    "mod": 0,
+    "cmd": 0,
+    "node":"49.4.2.7:114",
+    "passwd": "xxxx",
+    "timeout":1000
+  },
+
+  "data_redis": {
+    "qnum": 11,
+    "mod": 0,
+    "cmd": 0,
+    "node":"9.12.20.25:19",
+    "passwd": "xxxx",
+    "timeout":1000
+  },
+
+  "match_req_redis": {
+    "qnum": 11,
+    "mod": 0,
+    "cmd": 0,
+    "node":"9.12.9.9:124",
+    "passwd": "xxxx",
+    "timeout":1000
+  },
+
+  "match_result_redis": {
+    "qnum": 11,
+    "mod": 0,
+    "cmd": 0,
+    "node":"9.12.29.9:125",
+    "passwd": "xxxx",
+    "timeout":1000
+  },
+
+  "qualify_service":{
+    "thread_num":10
+  },
+
+  "calc_service":{
+    "as_thread":20,
+    "dm_thread":20
+  },
+
+  "pay_service":{
+    "thread_num":10
+  },
+
+  "result_service":{
+    "thread_num":10
+  },
+
+  "assist_service": {
+    "port": 5299,
+    "work_num": 32,
+    "io_num": 8
+  },
+
+  "tx_base_match":{
+    "use_plat":true,
+    "plat_mod":814209,
+    "plat_cmd":524288,
+    "plat_node":"",
+    "plat_timeout":1000,
+    "evid":210427103,
+    "cache_match_end_cycle":10
+  },
+
+  "qualify_flow":[
+    "zl:bak:qualify:flow:"
+  ],
+
+  "moni_qualify_flow":[
+    "zl:moni:qualify:flow:"
+  ],
+
+  "zl_host_flow":[
+    "zl:bak:host:flow:",
+    "zl:load:host:flow:",
+    "zl:moni:host:flow:",
+    "zl:fm:host:flow:",
+    "zl:dbd:host:flow:"
+  ],
+
+  "zl_guest_flow":[
+    "zl:bak:guest:flow:"
+  ],
+
+  "mysql": {
+    "ip": "9.12.9.6",
+    "port": 3306,
+    "user": "root",
+    "password": "xxxx",
+    "database": "zl2021",
+    "timeout": 10,
+    "charset": "utf8",
+    "tablename": "zl_flow_table"
+  }
+}
