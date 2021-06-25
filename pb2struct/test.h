@@ -437,11 +437,10 @@ void FromJson(const rapidjson::Value &doc, Root &to_data_) {
 	}
     if (doc.HasMember("mysql")) FromJson(doc["mysql"], to_data_.mysql);
 }
-template<class T>
-T FromJson(const rapidjson::Document &doc) 
+Root FromJson(const rapidjson::Document &doc) 
 {
-    T data;
-	FromJson(doc, data);
+    Root data;
+    FromJson(doc, data);
     return data;
 }
 

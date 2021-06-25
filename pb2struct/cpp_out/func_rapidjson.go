@@ -184,11 +184,10 @@ func (p *RapidJsonParseFuncIn) Include() string {
 
 func (p *RapidJsonParseFuncIn) RootFunc() string {
 	return `
-template<class T>
-T FromJson(const rapidjson::Document &doc) 
+Root FromJson(const rapidjson::Document &doc) 
 {
-    T data;
-	FromJson(doc, data);
+    Root data;
+    FromJson(doc, data);
     return data;
 }
 `
