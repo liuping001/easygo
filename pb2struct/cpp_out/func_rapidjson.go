@@ -98,7 +98,7 @@ inline std::string ToJson(const Root &data)
 {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-	ToJson(writer, data);
+    ToJson(writer, data);
     return buffer.GetString();
 }
 `
@@ -134,15 +134,15 @@ func (p *RapidJsonParseFuncIn) readFuncName(t string) string {
 
 func (p *RapidJsonParseFuncIn) FuncArrayField(t string, name string) string {
 	ret := `
-	if (doc.HasMember("%s")) {
-		auto items = doc["%s"].GetArray();
-		for (auto iter = items.Begin(); iter != items.End(); iter ++)
-		{
-			to_data_.%s.emplace_back();
-			auto &item =to_data_.%s.back();
-			%s
-		}
-	}`
+    if (doc.HasMember("%s")) {
+        auto items = doc["%s"].GetArray();
+        for (auto iter = items.Begin(); iter != items.End(); iter ++)
+        {
+            to_data_.%s.emplace_back();
+            auto &item =to_data_.%s.back();
+            %s
+        }
+    }`
 	if t == util.CppObject {
 		return fmt.Sprintf(ret,
 			name,
