@@ -151,7 +151,12 @@ func (p *RapidJsonParseFuncIn) FuncArrayField(t string, name string) string {
 			name,
 			"FromJson(iter->GetObject(), item)")
 	} else {
-		return fmt.Sprintf("item = iter->%s();", name, p.readFuncName(t))
+		return fmt.Sprintf(ret,
+			name,
+			name,
+			name,
+			name,
+			fmt.Sprintf("item = iter->%s();", p.readFuncName(t)))
 	}
 }
 
