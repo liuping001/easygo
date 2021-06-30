@@ -3,6 +3,10 @@
 
 #include <string>
 #include <vector>
+#include <memory>
+#include <iostream>
+#include <fstream>
+#include <rapidjson/istreamwrapper.h>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
@@ -437,11 +441,24 @@ void FromJson(const rapidjson::Value &doc, Root &to_data_) {
     }
     if (doc.HasMember("mysql")) FromJson(doc["mysql"], to_data_.mysql);
 }
-Root FromJson(const rapidjson::Document &doc) 
+static Root FromJson(const rapidjson::Document &doc) 
 {
     Root data;
     FromJson(doc, data);
     return data;
+}
+
+static std::shared_ptr<test::Root> FromFile(const std::string &file_path) {
+    using namespace rapidjson;
+    std::ifstream ifs {file_path};
+    if (!ifs.is_open()) {
+        std::cerr << "Could not open file for reading!\n";
+        return nullptr;
+    }
+    IStreamWrapper isw { ifs };
+    Document doc {};
+    doc.ParseStream(isw);
+    return std::make_shared<test::Root>(FromJson(doc));
 }
 
 }

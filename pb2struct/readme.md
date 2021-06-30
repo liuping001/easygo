@@ -6,11 +6,7 @@
 go build -o pb2struct main.go
 ```
 
-* 例：将example.json转成c++代码
-```shell script
-./pb2struct -file=example.json -pb_type=json -to_type=rapidjson
-# rapidjson 是c++代码的一种，使用的是rapidjson这个json库
-```
+
 
 ## json2struct
 根据json文本生成指定语言的代码。
@@ -20,4 +16,14 @@ go build -o pb2struct main.go
 {
   "item" : [["a", "b"], ["c", "d"]]
 }
+```
+#### 测试
+* 例：test.json转成c++代码
+```shell script
+./pb2struct -file=test.json -pb_type=json -to_type=rapidjson
+# rapidjson 是c++代码的一种，使用的是rapidjson这个json库
+```
+
+```shell script
+g++ -std=c++11 -o test test.cpp
 ```

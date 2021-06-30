@@ -85,6 +85,10 @@ func (p *RapidJsonParseFuncOut) Include() string {
 	return `
 #include <string>
 #include <vector>
+#include <memory>
+#include <iostream>
+#include <fstream>
+#include <rapidjson/istreamwrapper.h>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
@@ -175,6 +179,10 @@ func (p *RapidJsonParseFuncIn) Include() string {
 	return `
 #include <string>
 #include <vector>
+#include <memory>
+#include <iostream>
+#include <fstream>
+#include <rapidjson/istreamwrapper.h>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
@@ -184,11 +192,24 @@ func (p *RapidJsonParseFuncIn) Include() string {
 
 func (p *RapidJsonParseFuncIn) RootFunc() string {
 	return `
-Root FromJson(const rapidjson::Document &doc) 
+static Root FromJson(const rapidjson::Document &doc) 
 {
     Root data;
     FromJson(doc, data);
     return data;
+}
+
+static std::shared_ptr<test::Root> FromFile(const std::string &file_path) {
+    using namespace rapidjson;
+    std::ifstream ifs {file_path};
+    if (!ifs.is_open()) {
+        std::cerr << "Could not open file for reading!\n";
+        return nullptr;
+    }
+    IStreamWrapper isw { ifs };
+    Document doc {};
+    doc.ParseStream(isw);
+    return std::make_shared<test::Root>(FromJson(doc));
 }
 `
 }

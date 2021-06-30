@@ -1,22 +1,10 @@
-// g++ -std=gnu++11 -o test test.cpp
-#include <iostream>
-#include <fstream>
+// g++ -std=c++11 -o test test.cpp
 #include "test.h"
-#include <rapidjson/istreamwrapper.h>
 
 int main() {
-    using namespace rapidjson;
-
-    std::ifstream ifs { "test.json" };
-    if ( !ifs.is_open() ) {
-        std::cerr << "Could not open file for reading!\n";
-        return EXIT_FAILURE;
+    auto t = test::FromFile("test.json");
+    if (t != nullptr) {
+        std::cout << test::ToJson(*t);
     }
-    IStreamWrapper isw { ifs };
-    Document doc {};
-    doc.ParseStream( isw );
-
-    auto t = test::FromJson(doc);
-    std::cout << test::ToJson(t);
     return 0;
 }
